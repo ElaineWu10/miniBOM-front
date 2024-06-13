@@ -1,23 +1,37 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import Login from '@/views/Login'
 
 Vue.use(VueRouter)
 
+// 浏览器访问时会访问的vue页面。
 const routes = [
   {
-    path: '/',
-    name: 'home',
-    component: HomeView
+    path: '/login',
+    name: 'Login',
+    component: Login
   },
   {
-    path: '/about',
-    name: 'about',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
-  }
+    path: '/register',
+    name: 'Register',
+    component: () => import('../views/Register.vue')
+  },
+  {
+    path: "/home",
+    name: 'Home',
+    component: () => import("../views/Home.vue"),
+    redirect:'/welcome',
+    //放在children中，实现左侧导航栏保留跳转。
+    children:[
+      { path: '/welcome', name: 'Welcome', component: () => import("../views/Welcome.vue") }, // 首页
+      { path: '/attrManage', name: 'attrManage', component: () => import("../views/Home.vue") }, 
+      { path: '/categoryManage', name: 'CategoryManage', component: () => import("../views/CategoryManage.vue") }, 
+      { path: '/partManage', name: 'partManage', component: () => import("../views/Home.vue") }, 
+      { path: '/BOMManage', name: 'BOMManage', component: () => import("../views/Home.vue") }, 
+      { path: '/inheritManage', name: 'inheritManage', component: () => import("../views/Home.vue") }
+    ]
+  },
+  
 ]
 
 const router = new VueRouter({
