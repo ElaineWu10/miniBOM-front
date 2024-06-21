@@ -19,35 +19,15 @@ const MenuData= [
     path: '/categoryManage',
     name: 'CategoryManage',
     label: '分类管理',
-    icon: 'document',
+    icon: 'document', 
     url: 'CategoryManage'
   },
   {
-    label: 'Part&BOM管理',
+    path: '/partManage',
+    name: 'partManage',
+    label: 'Part管理',
     icon: 'setting',
-    children: [
-      {
-        path: '/partManage',
-        name: 'partManage',
-        label: 'Part管理',
-        icon: 'setting',
-        url: 'PartManage'
-      },
-      {
-        path: '/BOMManage',
-        name: 'BOMManage',
-        label: 'BOM属性管理',
-        icon: 'cpu',
-        url: 'BOMManage'
-      },
-      {
-        path: '/inheritManage',
-        name: 'inheritManage',
-        label: '父子项管理',
-        icon: 'connection',
-        url: 'InheritManage'
-      }
-    ]
+    url: 'PartManage'
   }
 ]
 

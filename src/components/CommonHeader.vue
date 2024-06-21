@@ -47,11 +47,13 @@ export default {
 <style lang="less" scoped>
 
 .header-container {
-    background-color: #333;
+    background-color: #fff;
     height: 60px;
+    
+    border-bottom: 1px solid #ccc;
 
     // 让按钮和头像居中
-    display: flex;
+    display: flex; 
     justify-content: space-between;
     align-items: center;
     // 不要紧贴边框
@@ -64,7 +66,7 @@ export default {
     
     .username {
         margin-top: 0px;
-        color:#fff;
+        color:#111;
         margin: 0px; 
         padding: 0px;
     }
@@ -87,7 +89,7 @@ export default {
 
             &:last-child {
                 .el-breadcrumb__inner {
-                    color: #fff;
+                    color: #111;
                 }
             }
         }

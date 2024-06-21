@@ -37,7 +37,7 @@ export default {
             console.log(key, keyPath);
         },
         handleClose(key, keyPath) {
-            console.log(key, keyPath);
+            console.log(key, keyPath); 
         },
         //页面跳转
         clickItem(item){
@@ -68,7 +68,7 @@ export default {
 
 <style>
 .el-menu-vertical-demo:not(.el-menu--collapse) {
-    width: 200px;
+    width: 180px;
     min-height: 400px;
 }
 .el-menu{

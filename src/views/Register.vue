@@ -29,7 +29,7 @@
 import axios from 'axios'
 import qs from 'qs'
 export default {
-    name: 'Login',
+    name: 'Register',
     data: function() {
         var checkName=(rule,value,callback)=>{
             let nameReg= /^[A-Za-z0-9]+$/;
@@ -45,7 +45,7 @@ export default {
             if(!value) callback();
             else {
                 if(pwReg.test(value)){
-                    callback();
+                    callback(); 
                 }else callback(new Error("只含数字/字母/特殊字符(_?!)"));
             }
         };
@@ -97,12 +97,13 @@ export default {
                 email: this.form.email
             };
             console.log(params);
-            var url = "user/create";
+            var url = "user/register";
 			//注意数据是保存到json对象的params属性
             axios.post(url, params).then(function(response) { 
-            	if(response.data.result=="SUCCESS") that.$router.replace({name:'Home'});
+                console.log(response)
+            	if(response.data.code=='200') that.$router.replace({name:'Home'});
                 else{
-                    that.$message.error('用户名已存在');
+                    that.$message.error(response.data.msg);
                     that.form.username='';
                     that.form.password='';
                     that.form.telephone='';

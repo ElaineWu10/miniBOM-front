@@ -31,10 +31,10 @@
       <el-table-column fixed="right" label="操作" width="200">
         <template slot-scope="scope">
           <el-tooltip class="item" effect="dark" content="编辑" placement="top">
-            <el-button type="primary" icon="el-icon-edit" circle @click="BJCollectionForm(scope)"></el-button>
+            <el-button icon="el-icon-edit" circle @click="BJCollectionForm(scope)"></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="删除" placement="top">
-            <el-button type="danger" icon="el-icon-delete" circle @click="deleteVisible(scope)"></el-button>
+            <el-button icon="el-icon-delete" circle @click="deleteVisible(scope)"></el-button>
           </el-tooltip>
         </template>
       </el-table-column>
@@ -47,7 +47,7 @@
     </el-pagination>
  
     <!-- 新增弹窗 -->
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" @close="handleClose">
     <!-- 增加tab -->
     <el-tabs v-model="dialogTab">
       <el-tab-pane label="基本信息" name="basicInfo" :key="'basicInfo'">
@@ -258,7 +258,6 @@
           console.log(response.data.data);
           console.log(this.list);
           this.total=1;
-
         })
       },
 
@@ -276,10 +275,10 @@
           url: 'classificationNode/find/',
         }).then((response) => {
           this.listLoading = false;
-          if(this.AllList==null) this.AllList=response.data.data;
+          this.AllList=response.data.data;
           this.list = response.data.data.slice(
-        (this.listQuery.page - 1) * 10,
-        this.listQuery.page * 10 );
+            (this.listQuery.page - 1) * 10,
+            this.listQuery.page * 10 );
           console.log(response.data.data);
           console.log(this.list);
           this.total = response.data.data.length;
@@ -395,6 +394,10 @@
         this.axiosEXAdata(scope.row.id)
       },
 
+      handleClose(){
+        this.$refs.collectionform.resetFields();
+      },
+
       /* 分类中已存在属性 多选 */
       handleExistSelectionChange(val){
         console.log(val);
@@ -444,7 +447,7 @@
       },
 
       /* 分类发送提交新属性请求 */
-      submitEXAForm(){
+      submitEXAForm(){ 
         if(this.addEXAList==null) this.$message.error('请选择要添加的分类');
         else{
           this.$axios({
