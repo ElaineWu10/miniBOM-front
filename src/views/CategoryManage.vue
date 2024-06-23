@@ -7,13 +7,13 @@
             <el-input v-model="searchData" placeholder="请输入关键字"></el-input>
         </el-form-item>
         <el-form-item> 
-            <el-button type="primary" @click="onSubmitSelect" icon="el-icon-search">查询</el-button>
+            <el-button type="primary" @click="onSubmitSelect" icon="el-icon-search" plain>查询</el-button>
         </el-form-item>  
         <el-form-item>
-            <el-button type="success" @click="TJCollectionForm" icon="el-icon-edit">新增</el-button>
+            <el-button type="success" @click="TJCollectionForm" icon="el-icon-edit" plain>新增</el-button>
         </el-form-item>
         <el-form-item> 
-            <el-button type="primary" @click="refreshMenu" icon="el-icon-refresh">重置</el-button>
+            <el-button type="primary" @click="refreshMenu" icon="el-icon-refresh" plain>重置</el-button>
         </el-form-item> 
     </el-form>
 
@@ -31,10 +31,10 @@
       <el-table-column fixed="right" label="操作" width="200">
         <template slot-scope="scope">
           <el-tooltip class="item" effect="dark" content="编辑" placement="top">
-            <el-button icon="el-icon-edit" circle @click="BJCollectionForm(scope)"></el-button>
+            <el-button type="primary" icon="el-icon-edit" circle @click="BJCollectionForm(scope)" plain></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="删除" placement="top">
-            <el-button icon="el-icon-delete" circle @click="deleteVisible(scope)"></el-button>
+            <el-button type="danger" icon="el-icon-delete" circle @click="deleteVisible(scope)" plain></el-button>
           </el-tooltip>
         </template>
       </el-table-column>
@@ -189,7 +189,7 @@
         //添加属性的列表
         addEXAList: null,
         //移除属性的列表
-        deleteEXAList: [],
+        deleteEXAList: [], 
 
         dialogFormVisible: false,
         dialogStatus: 'create',
@@ -315,7 +315,6 @@
         
       },
   
-
       /* 处理父节点select下拉框，获取父节点 */
       getParent(){
         this.$axios({

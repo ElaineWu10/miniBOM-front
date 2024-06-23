@@ -24,13 +24,13 @@
         </el-form-item>
       </el-col>
         <el-form-item> 
-            <el-button type="primary" @click="submitSearch" icon="el-icon-search">查询</el-button>
+            <el-button type="primary" @click="submitSearch" icon="el-icon-search" plain>查询</el-button>
         </el-form-item>  
         <el-form-item>
-            <el-button type="success" @click="addNewPart" icon="el-icon-edit">新增</el-button>
+            <el-button type="success" @click="addNewPart" icon="el-icon-edit" plain>新增</el-button>
         </el-form-item>
         <el-form-item> 
-            <el-button type="primary" @click="refreshMenu" icon="el-icon-refresh">重置</el-button>
+            <el-button type="primary" @click="refreshMenu" icon="el-icon-refresh" plain>重置</el-button>
         </el-form-item> 
     </el-row>
     </el-form>
@@ -50,15 +50,15 @@
       </el-table-column>
       <el-table-column label="装配模式" prop="partType.cnName">
       </el-table-column>
-      <el-table-column label="分类编码" prop="clsAttrs.id">
+      <el-table-column label="分类名称" prop="extAttrs[0].value.name">
       </el-table-column>
       <el-table-column fixed="right" label="操作" width="200">
         <template slot-scope="scope">
           <el-tooltip class="item" effect="dark" content="编辑" placement="top">
-            <el-button icon="el-icon-edit" circle @click="editPart(scope)"></el-button>
+            <el-button type="primary" icon="el-icon-edit" circle @click="editPart(scope)" plain></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="删除" placement="top">
-            <el-button icon="el-icon-delete" circle @click="deleteVisible(scope)"></el-button>
+            <el-button type="danger" icon="el-icon-delete" circle @click="deleteVisible(scope)" plain></el-button>
           </el-tooltip>
         </template>
       </el-table-column>
@@ -150,39 +150,66 @@
               <el-button @click="checkBOM">查看BOM清单</el-button>
           </el-form-item>
           <el-form-item> 
-              <el-button @click="checkParent">查看父项</el-button>
+              <el-button @click="toggleParentTable">查看父项</el-button>
           </el-form-item> 
         </el-form>
 
         <el-table :data="BOMList" element-loading-text="Loading" border fit highlight-current-row>
-          <el-table-column label="编码" prop="id">
-            <template slot-scope="scope">
-              <el-link type="primary" @click="detailInfo(scope)">{{scope.row.id}}</el-link>
-            </template>
+          <el-table-column label="编码" prop="id" width="180">
           </el-table-column>
           <el-table-column label="名称" prop="name">
           </el-table-column>
-          <el-table-column label="数量" prop="quentity">
+          <el-table-column label="数量" prop="quantity" width="180">
+            <template slot-scope="scope">
+              <div v-if="scope.row.editingQuantity">
+                <el-input v-model="scope.row.quantity" @blur="finishEdit(scope.row, 'quantity')" />
+              </div>
+              <div v-else>
+                {{ scope.row.quantity }}
+                <el-button class="no-border" icon="el-icon-edit" size="mini" @click="editField(scope.row, 'quantity')"></el-button>
+              </div>
+            </template>
           </el-table-column>
           <el-table-column label="位号" prop="referenceDesignator">
+            <template slot-scope="scope">
+              <div v-if="scope.row.editingReferenceDesignator">
+                <el-input v-model="scope.row.referenceDesignator" @blur="finishEdit(scope.row, 'referenceDesignator')" />
+              </div>
+              <div v-else>
+                {{ scope.row.referenceDesignator }}
+                <el-button class="no-border" icon="el-icon-edit" size="mini" @click="editField(scope.row, 'referenceDesignator')"></el-button>
+              </div>
+            </template>
           </el-table-column>
-          <el-table-column fixed="right" label="操作" width="150">
+          <el-table-column fixed="right" label="操作" width="100">
             <template slot-scope="scope">
               <el-tooltip class="item" effect="dark" content="删除" placement="top">
-                <el-button type="danger" icon="el-icon-delete" circle @click="deleteVisible(scope)"></el-button>
+                <el-button icon="el-icon-delete" circle @click="deleteBOM(scope)"></el-button>
               </el-tooltip>
             </template>
           </el-table-column>
         </el-table>
+
+      <el-divider content-position="left"></el-divider>
+
+      <!-- 父项表格 -->
+      <el-table v-show="showParentTable" :data="parentBOMList" border fit highlight-current-row>
+        <el-table-column label="部件编码" prop="id">
+        </el-table-column>
+        <el-table-column label="部件名称" prop="name">
+        </el-table-column>
+        <el-table-column label="版本号" prop="version">
+        </el-table-column>
+        <el-table-column label="迭代版本" prop="iteration">
+        </el-table-column>
+      </el-table>
+
       </el-tab-pane>
 
       <!-- 版本管理tab -->
       <el-tab-pane label="版本管理" name="versionManage" :key="'VersionManage'" v-if="dialogStatus!='create'">
         <el-table :data="partVersionList" element-loading-text="Loading" border fit highlight-current-row>
           <el-table-column label="部件编码" prop="id">
-            <template slot-scope="scope">
-              <el-link type="primary" @click="detailInfo(scope)">{{scope.row.id}}</el-link>
-            </template>
           </el-table-column>
           <el-table-column label="部件名称" prop="name">
           </el-table-column>
@@ -193,29 +220,117 @@
           <el-table-column fixed="right" label="操作" width="150" v-if="dialogStatus=='update'">
             <template slot-scope="scope">
               <el-tooltip class="item" effect="dark" content="删除" placement="top">
-                <el-button icon="el-icon-delete" circle @click="deleteVisible(scope)"></el-button>
+                <el-button icon="el-icon-delete" circle @click="deleteVersion(scope)"></el-button>
               </el-tooltip>
-            </template>
+            </template> 
           </el-table-column>
         </el-table>
       </el-tab-pane>
 
       </el-tabs>
     </el-dialog>
+
+    <!-- 添加子项弹窗 -->
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="bomDialogFormVisible" @close="handleChildClose">
+      <el-form ref="collectionbomform" :model="ruleForm" label-width="100px" label-position="left">
+        <el-row type="flex">
+          <el-form-item>
+              <el-radio-group v-model="searchType1">
+                <el-row type="flex">
+                  <el-col :span="8">
+                  <el-radio label="partId">按编码查询
+                      <el-input v-model="searchChildPartId" :readonly="searchType1=='partName'"></el-input>
+                  </el-radio>
+                  </el-col>
+                  <el-col :span="5"></el-col>
+                  <el-col :span="8">
+                  <el-radio label="partName">按部件名称
+                      <el-input v-model="searchChildPartName" :readonly="searchType1=='partId'"></el-input>
+                  </el-radio>
+                  </el-col>
+                </el-row>
+              </el-radio-group>
+          </el-form-item>
+        </el-row>
+        <el-row type="flex">
+          <el-form-item> 
+              <el-button type="primary" @click="submitChildSearch" icon="el-icon-search" plain>查询</el-button>
+              <el-button type="primary" @click="refreshChildMenu" icon="el-icon-refresh" plain>重置</el-button>
+          </el-form-item> 
+        </el-row>
+
+        <!-- 查询部件表格 -->
+        <el-table :data="addChildPartList" element-loading-text="Loading" border fit highlight-current-row>
+        <el-table-column label="部件编码" prop="id">
+        </el-table-column>
+        <el-table-column label="部件名称" prop="name">
+        </el-table-column>
+        <el-table-column fixed="right" label="操作" width="200">
+          <template slot-scope="scope">
+            <el-tooltip class="item" effect="dark" placement="top">
+              <el-button type="primary" :class="{ active: isActive }" @click="addChildPart(scope)" plain>
+                {{isActive ? '已添加': '添加选定项'}}
+              </el-button>
+            </el-tooltip>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <el-divider content-position="left">BOM信息</el-divider>
+
+      <el-form :inline="true" :rules="rules" :model="childFormData">
+        <el-row type="flex">
+        <el-col :span="8">
+          <el-form-item label="数量" prop="quantity">
+            <el-input v-model="childFormData.childQuantity"></el-input>
+          </el-form-item>
+        </el-col>
+        <el-col :span="3"></el-col>
+        <el-col :span="8">
+          <el-form-item label="位号" prop="referenceDesignator">
+            <el-input v-model="childFormData.childReferenceDesignator"></el-input>
+          </el-form-item>
+        </el-col>
+        </el-row>
+      </el-form>
+
+      <div class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="submitAddChildForm()">提 交</el-button>
+      </div>
+      </el-form>
+    </el-dialog>
   </div>
 </template>
 
 <script>
+import { ElTable, ElTableColumn } from 'element-ui';
+
 export default{
     data(){
         return{
+          //查询模式
           searchType: 'partId',
+          searchType1: 'partId',
+          //查询部分
           searchPartId: '',
           searchPartName: '',
+          //查询子项
+          searchChildPartId: '',
+          searchChildPartName: '',
+          //子项数量和区位
+          childFormData:{
+            childQuantity:'',
+            childReferenceDesignator:'',
+          },
+
           allPartList: [],
           partList: [],
           partVersionList: [],
+          addChildPartList:[],
           BOMList: [],
+          parentBOMList:[],
+          ChildPartData:[],
 
           listQuery: {
             page: 1,
@@ -224,11 +339,16 @@ export default{
           total: 0,
 
           dialogFormVisible: false,
+          bomDialogFormVisible: false,
           dialogStatus: 'create',
+          isActive:false,  //选中子项
+          showParentTable:false,
+
           textMap: {
           update: '修改部分',
           create: '添加部分',
           detail: '部分详情',
+          addChild: '添加子项'
           },
 
           dialogTab: "basicInfo",
@@ -289,7 +409,8 @@ export default{
           dynamicEXA: null,
           formData: {}, // 存储文本框内容的对象
 
-          partMasterId:'' //记录当前处理的part的masterId
+          partMasterId:'', //记录当前处理的part的masterId
+          currentPartId:''
 
         }
     },
@@ -297,7 +418,7 @@ export default{
         this.axiosdata()
     },
     methods:{
-        //处理分页
+        /* 处理分页 */
         handleSizeChange(val) {
             this.listQuery.limit = val;
             this.axiosdata();
@@ -363,7 +484,6 @@ export default{
 
         /* 关闭弹窗时重置弹窗内容 */
         handleClose(){
-           // 重置下拉框相关数据
             this.unitData = [];
             this.sourceData = [];
             this.partTypeData = [];
@@ -371,6 +491,9 @@ export default{
             this.formData = {};
             this.dynamicEXA = null;
             this.$refs.collectionform.resetFields();
+            this.BOMList=[];
+            this.showParentTable=false;
+            this.parentBOMList=[]
         },
 
         /* 重置菜单 */
@@ -428,9 +551,12 @@ export default{
               } else this.formData = {};
             } 
           } 
-          this.partMasterId=scope.row.master.id;   
+          this.partMasterId=scope.row.master.id;
+          console.log(this.partMasterId)
+          this.currentPartId=scope.row.id;   
           this.getPartVersion(this.partMasterId)
-          //this.getBOMList()
+          this.BOMList=[]
+          this.getBOMList()
 
           this.dialogStatus = "update";
           this.dialogFormVisible = true
@@ -451,60 +577,93 @@ export default{
         },
 
         /* 获取BOM清单 */
-        /*
-        getBOMList(){
-          let that=this;
-          this.$axios({
-            method:'post',
-            url:'bomlink/queryRelatedObjects',
-            data:{                 
-              "role": "Source",
-              "objectId": this.ruleForm.id
+        async getBOMList() {
+          let that = this;
+          try {
+            const response = await this.$axios({
+              method: 'post',
+              url: 'bomlink/queryRelatedObjects',
+              data: {
+                "role": "Source",
+                "objectId": this.ruleForm.id
+              }
+            });
+            console.log("找masterId");
+            console.log(response);
+            for (const item of response.data.data) {
+              try {
+                const partResponse = await this.$axios({
+                  method: 'post',
+                  url: 'part/getLatestVersion',
+                  data: {
+                    "masterId": item.id,
+                    "version": "A"
+                  }
+                });
+
+                console.log("找part最新版本");
+                console.log(partResponse);
+
+                if (partResponse.data.result == "SUCCESS") {
+                  const BOMname = partResponse.data.data[0].name;
+                  const BOMid = partResponse.data.data[0].id;
+
+                  try {
+                    const bomResponse = await this.$axios({
+                      method: 'post',
+                      url: 'bomUsesOccurrence/findBySourceId/' + item.id,
+                    });
+                    console.log("找bomoccurrence");
+                    console.log(bomResponse);
+                    console.log(bomResponse.data.data.length);
+                    if(bomResponse.data.data.length>0){
+                      //遍历master对应的每个bomoccurrence，找到这一行对应的那个
+                      bomResponse.data.data.forEach((item)=>{
+                        if(item.bomLink.source.id==that.currentPartId){
+                          const bomLinkId = item.bomLink.id;
+                          var BOMquantity='';
+                          this.$axios({
+                            method:'post',
+                            url:'bomlink/get',
+                            data:{
+                              "id": item.bomLink.id
+                            }
+                          }).then((bomLinkResponse)=>{
+                            console.log('bomlink',bomLinkResponse)
+                            if(bomLinkResponse.data.result=="SUCCESS"){
+                              BOMquantity=bomLinkResponse.data.data[0].quantity; 
+                              const bomOccurrenceId= item.id;
+                              const BOMreferenceDesignator = item.referenceDesignator;
+                              that.BOMList.push({
+                                "name": BOMname,
+                                "id": BOMid,
+                                "quantity": BOMquantity,
+                                "referenceDesignator": BOMreferenceDesignator,
+                                "bomLinkId": bomLinkId,
+                                "bomOccurrenceId":bomOccurrenceId,
+                                "editingQuantity": false, 
+                                "editingReferenceDesignator": false
+                              });
+                            }                    
+                          })                         
+                        }
+                      })                      
+                    }                   
+                  } catch (bomError) {
+                    console.error("Error fetching BOM occurrence data:", bomError);
+                  }
+                }
+              } catch (partError) {
+                console.error("Error fetching latest part version:", partError);
+              }
             }
-          }).then((response)=>{
-            console.log("找masterId")
-            console.log(response)
-            response.data.data.forEach((item)=>{
-              that.$axios({
-                method:'post',
-                url:'part/getLatestVersion',
-                data:{
-                  "masterId":item.id,
-                  "version":"A"
-                }
-              }).then((response)=>{
-                console.log("找part最新版本")
-                console.log(response)
-                if(response.data.result=="SUCCESS"){
-                  let name= response.data.data[0].name;
-                  let id=response.data.data[0].id;
-                  that.$axios({
-                    method:'post',
-                    url:'bomUsesOccurrence/findBySourceId/'+this.ruleForm.id,
-                  }).then((response)=>{
-                    console.log("找bomoccurrence")
-                    console.log(response)
-                    let quentity=response.data.data[0].bomlink.quentity;
-                    let bomLinkId=response.data.data[0].bomLink.id;
-                    let referenceDesignator=response.data.data.referenceDesignator;
-                    that.BOMList.push({
-                      "name":name,
-                      "id":id,
-                      "quentity":quentity,
-                      "referenceDesignator":referenceDesignator,
-                      "bomLinkId":bomLinkId
-                    })
-                  })
-                }
-              })
-            })
-          })
+          } catch (error) {
+            console.error("Error fetching related objects:", error);
+          }
         },
-        */
 
         /* 删除部分 */
         deleteVisible(scope){
-          console.log(scope.row)
           this.$confirm('确定要删除【' + scope.row.name + '】吗？', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
@@ -538,8 +697,7 @@ export default{
           if(scope.row.source!=null){
             this.ruleForm.source.cnName=scope.row.source.cnName;
             this.ruleForm.source.enName=scope.row.source.enName;
-          }
-          else{
+          }else{
             this.ruleForm.source.cnName='';
             this.ruleForm.source.enName='';
           }
@@ -549,8 +707,7 @@ export default{
           if(scope.row.partType!=null){
             this.ruleForm.partType.cnName=scope.row.partType.cnName;
             this.ruleForm.partType.enName=scope.row.partType.enName;
-          }
-          else {
+          }else {
             this.ruleForm.partType.cnName='';
             this.ruleForm.partType.enName='';
           }
@@ -559,8 +716,7 @@ export default{
           if (classificationAttr){
             this.ruleForm.classification.name = classificationAttr.value?.name || ''; 
             this.ruleForm.classification.id = classificationAttr.value?.id || '';
-          } 
-          else{
+          } else{
             this.ruleForm.classification.name = ''; 
             this.ruleForm.classification.id = '';
           } 
@@ -782,11 +938,299 @@ export default{
               });
             }
           })            
+        },
+
+        /* 添加子项 */
+        addChild(){
+          this.bomDialogFormVisible=true;
+          this.dialogStatus='addChild';
+        },
+       
+        /* 重置子项查询 */
+        refreshChildMenu(){
+          this.searchChildPartId= '';
+          this.searchChildPartName= '';
+          this.addChildPartList=[];
+        },
+
+        /* 添加子项查询 */
+        submitChildSearch(){
+          if(this.searchChildPartId==''&&this.searchChildPartName=='') return this.$message.error('请输入查询字段');
+
+          if(this.searchType1=='partId'){
+              this.$axios({
+                  method: 'post',
+                  url: '/part/findById/'+this.searchChildPartId
+              }).then((response)=>{
+                  console.log(response)
+                  if (response.data.result == "SUCCESS"){
+                      this.addChildPartList=response.data.data
+                      this.total=1;
+                      this.$message.success('查询成功');
+                  } else this.$message.error('查询失败');
+              })
+          }else{
+              this.$axios({
+                  method: 'post',
+                  url: '/part/findByName/'+this.searchChildPartName
+              }).then((response)=>{
+                  console.log(response)
+                  if (response.data.result == "SUCCESS"){
+                      this.addChildPartList=response.data.data
+                      this.total=response.data.data.length;
+                      this.$message.success('查询成功');
+                  } else this.$message.error('查询失败');
+              })
+          }
+        },
+
+        /* 添加选定项 */
+        addChildPart(scope){
+          if(!this.isActive){
+            this.isActive=!this.isActive
+            this.ChildPartData=scope.row;
+          } else{
+            this.isActive=!this.isActive
+            this.ChildPartData=null;
+          }
+          console.log(this.ChildPartData);
+        },
+
+        /* 提交添加子项 */
+        submitAddChildForm(){
+          let that=this
+          if(this.ChildPartData==null) this.$message.error("请选中子项")
+          else{
+            this.$axios({
+              method:'post',
+              url:'bomlink/create',
+              data:{                  
+                "source":{
+                    "id":that.currentPartId
+                },
+                "target":{
+                    "id":that.ChildPartData.master.id
+                },
+                "quantity": that.childFormData.childQuantity
+              }
+            }).then((response)=>{
+              console.log(response)
+              const bomLinkId=response.data.data[0].id
+              console.log(bomLinkId)
+              if(response.data.result=="SUCCESS"){
+                this.$axios({
+                  method:'post',
+                  url:'bomUsesOccurrence/create',
+                  data:{
+                    "referenceDesignator":that.childFormData.childReferenceDesignator,
+                    "bomLink":{
+                      "id": bomLinkId
+                    }
+                  }
+                }).then((response1)=>{
+                  console.log(response1)
+                  if(response1.data.result=="SUCCESS"){
+                    this.$message.success("创建成功")
+                    this.bomDialogFormVisible=false
+                    this.BOMList=[];
+                    this.getBOMList()
+                  }else this.$message.error("创建失败")
+                })
+              }
+            })
+          }
+        },
+
+        /* 删除bom */
+        deleteBOM(scope){
+          console.log(scope)
+          this.$confirm('确定要删除【' + scope.row.name + '】吗？', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            this.$axios({
+              method:'post',
+              url:'bomUsesOccurrence/delete',
+              data:{
+                "id":scope.row.bomOccurrenceId
+              }
+            }).then((response)=>{
+              console.log(response)
+              if(response.data.result=="SUCCESS"){
+                this.$axios({
+                  method:'post',
+                  url:'bomlink/delete',
+                  data:{
+                    "id":scope.row.bomLinkId
+                  }
+                }).then((response)=>{
+                  console.log(response)
+                  if(response.data.result=="SUCCESS"){
+                    this.$message.success("删除成功")
+                    this.BOMList=[];
+                    this.getBOMList()
+                  }else{
+                    this.$message.error("删除失败")
+                  }
+                })
+              }else{
+                this.$message.error("删除失败")
+              }
+            })
+          }).catch((error)=>{
+            if(error !== 'cancel'){
+              this.$message.error('操作失败');
+            }
+          });
+        },
+
+        /* 关闭添加子项弹窗时重置弹窗内容 */
+        handleChildClose(){
+          this.searchChildPartId= '';
+          this.searchChildPartName= '';
+          this.addChildPartList=[];
+          this.isActive=false;
+        },
+
+        /* bom表内编辑 */
+        editField(row, field) {
+          if (field === 'quantity') {
+            row.editingQuantity = true;
+          } else if (field === 'referenceDesignator') {
+            row.editingReferenceDesignator = true;
+          }
+        },
+        finishEdit(row, field) {
+          if (field === 'quantity') {
+            row.editingQuantity = false;
+            this.updateQuantity(row)
+          } else if (field === 'referenceDesignator') {
+            row.editingReferenceDesignator = false;
+            this.updateReferenceDesignator(row)
+          }
+        },
+
+        /* 修改bom数量 */
+        updateQuantity(row) {
+          console.log(row);
+          this.$axios({
+            method:'post',
+            url:'bomlink/update',
+            data:{
+              "id": row.bomLinkId,
+              "quantity":row.quantity
+            }
+          }).then((response)=>{
+            console.log(response)
+            if(response.data.result=="SUCCESS"){
+              this.$message.success("修改成功")
+              this.BOMList=[]
+              this.getBOMList()
+            } 
+            else {
+              this.$message.error("修改失败")
+              this.BOMList=[]
+              this.getBOMList()
+            }
+          })
+        },
+
+        /* 修改bom位号 */
+        updateReferenceDesignator(row) {
+          console.log(row);
+          this.$axios({
+            method:'post',
+            url:'bomUsesOccurrence/update',
+            data:{
+              "id": row.bomOccurrenceId,
+              "referenceDesignator":row.referenceDesignator,
+              "bomLink":{
+                "id":row.bomLinkId
+              }
+            }
+          }).then((response)=>{
+            console.log(response)
+            if(response.data.result=="SUCCESS"){
+              this.$message.success("修改成功")
+              this.BOMList=[]
+              this.getBOMList()
+            } 
+            else {
+              this.$message.error("修改失败")
+              this.BOMList=[]
+              this.getBOMList()
+            }
+          })
+        },
+
+        /* 删除版本 */
+        deleteVersion(scope){
+           this.$confirm('确定要删除【' + scope.row.name + '】吗？', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            this.$axios({
+              method:'post',
+              url:'part/deleteLatestVersion',
+              data:{
+                "masterId": scope.row.master.id
+              }
+            }).then((response)=>{
+              console.log(response)
+              if(response.data.result=="SUCCESS"){
+                this.$message.success("删除成功")
+                this.partVersionList=[]
+                this.getPartVersion(this.partMasterId)
+              }else{
+                this.$message.success("删除成功")
+              }
+            })
+          }).catch((error)=>{
+            if(error !== 'cancel'){
+              this.$message.error('操作失败');
+            }
+          });
+        },
+
+        /* 点击查看父项 */
+        toggleParentTable(){
+          if(!this.showParentTable){
+            this.$axios({
+              method:'post',
+              url:'bomlink/queryRelatedObjects',
+              data:{
+                "role":"Target",
+                "objectId":this.partMasterId
+              }
+            }).then((response)=>{
+              console.log(response);
+              if(response.data.result=="SUCCESS"){
+                this.parentBOMList=response.data.data;
+                this.$message.success("查询成功")
+              }else{
+                this.$message.error("查询失败")
+              }
+            })
+          }
+          this.showParentTable=!this.showParentTable;
+        },
+
+        /* 查看bom清单 */
+        checkBOM(){
+
         }
     }
 }
 </script>
 
 <style>
-
+  .no-border {
+    border: none !important;
+    box-shadow: none !important;
+  }
+  .el-button {
+    margin-left: 10px;
+  }
 </style>

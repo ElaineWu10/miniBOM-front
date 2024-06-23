@@ -23,7 +23,7 @@ export default {
         return{}
     },
     components:{
-        CommonAside,
+        CommonAside, 
         CommonHeader
     }
 }
@@ -38,12 +38,14 @@ export default {
   }
   
   .el-aside {
+    width: 180px !important;
     color: #333;
   }
 
   .el-container {
     margin: 0px;
     height:100vh;
+    background-color: #f7f8fc;
   }
 
 </style>
