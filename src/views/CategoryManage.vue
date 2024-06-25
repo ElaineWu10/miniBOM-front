@@ -28,6 +28,10 @@
       </el-table-column>
       <el-table-column label="分类英文名称" prop="nameEn">
       </el-table-column>
+      <el-table-column label="分类描述" prop="description">
+      </el-table-column>
+      <el-table-column label="分类英文描述" prop="descriptionEn">
+      </el-table-column>
       <el-table-column fixed="right" label="操作" width="200">
         <template slot-scope="scope">
           <el-tooltip class="item" effect="dark" content="编辑" placement="top">
@@ -84,7 +88,6 @@
             </el-col>
             <el-col :span="3"></el-col>
 
-            <!-- 下拉框参考https://juejin.cn/post/6993316433509744677 -->
             <el-form-item label="分类父节点" prop="parentNode"  v-if="dialogStatus=='create'">
             <el-select ref="selectParent" v-model="parentData.name" placeholder="请选择" @focus="getParent" @change="selectParent(parentData.name)" :disabled="dialogStatus=='detail'">
               <el-option v-for="item in parentData" :key="item.id" :value="item.id" :label="item.name"></el-option>

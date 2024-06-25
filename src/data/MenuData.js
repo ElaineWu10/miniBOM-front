@@ -2,7 +2,7 @@
 //icon在elementui中能查找：https://element.eleme.cn/#/zh-CN/component/icon#icon-tu-biao
 const MenuData= [
   {
-    path: '/home',
+    path: '/welcome',
     name: 'home',
     label: '首页',
     icon: 's-home',

@@ -52,10 +52,19 @@
       </el-table-column>
       <el-table-column label="分类名称" prop="extAttrs[0].value.name">
       </el-table-column>
-      <el-table-column fixed="right" label="操作" width="200">
+      </el-table-column>
+      <el-table-column label="状态" prop="workingState.cnName">
+      </el-table-column>
+      <el-table-column fixed="right" label="操作" width="250">
         <template slot-scope="scope">
+          <el-tooltip class="item" effect="dark" content="检出" placement="top">
+            <el-button type="success" icon="el-icon-upload2" circle @click="checkoutPart(scope)" plain></el-button>
+          </el-tooltip>
           <el-tooltip class="item" effect="dark" content="编辑" placement="top">
             <el-button type="primary" icon="el-icon-edit" circle @click="editPart(scope)" plain></el-button>
+          </el-tooltip>
+          <el-tooltip class="item" effect="dark" content="检入" placement="top">
+            <el-button type="warning" icon="el-icon-download" circle @click="checkinPart(scope)" plain></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="删除" placement="top">
             <el-button type="danger" icon="el-icon-delete" circle @click="deleteVisible(scope)" plain></el-button>
@@ -96,7 +105,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="4"></el-col>
-          <el-form-item label="来源" prop="source">
+          <el-form-item label="来源" prop="source.cnName">
             <el-select ref="selectSource" v-model="ruleForm.source.cnName" placeholder="请选择" @focus="getSource" @change="selectSource" :disabled="dialogStatus=='detail'">
               <el-option v-for="item in sourceData" :key="item.code" :value="item.enName" :label="item.cnName"></el-option>
             </el-select>
@@ -105,14 +114,14 @@
 
         <el-row type="flex">   
           <el-col :span="10">
-            <el-form-item label="装配模式" prop="partType">
+            <el-form-item label="装配模式" prop="partType.cnName">
               <el-select ref="selectPartType" v-model="ruleForm.partType.cnName" placeholder="请选择" @focus="getPartType" @change="selectPartType" :disabled="dialogStatus=='detail'" >
                 <el-option v-for="item in partTypeData" :key="item.code" :value="item.enName" :label="item.cnName"></el-option>
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="4"></el-col>  
-          <el-form-item label="分类" prop="classification">
+          <el-form-item label="分类" prop="classification.name">
             <el-select ref="selectClassification" v-model="ruleForm.classification.name" placeholder="请选择" @focus="getClassification" @change="selectClassification" :disabled="dialogStatus=='detail'" >
               <el-option v-for="item in classificationData" :key="item.id" :value="item.id" :label="item.name"></el-option>
             </el-select>
@@ -144,7 +153,7 @@
       <el-tab-pane label="BOM清单" name="BOMInfo" :key="'BOMInfo'" v-if="dialogStatus!='create'">
         <el-form :inline="true" :model="listQuery" class="demo-form-inline" :rules="rules">
           <el-form-item> 
-              <el-button @click="addChild">新增子项</el-button>
+              <el-button @click="addChild" :disabled="dialogStatus=='detail'">新增子项</el-button>
           </el-form-item>  
           <el-form-item>
               <el-button @click="checkBOM">查看BOM清单</el-button>
@@ -166,7 +175,7 @@
               </div>
               <div v-else>
                 {{ scope.row.quantity }}
-                <el-button class="no-border" icon="el-icon-edit" size="mini" @click="editField(scope.row, 'quantity')"></el-button>
+                <el-button class="no-border" icon="el-icon-edit" size="mini" @click="editField(scope.row, 'quantity')" :disabled="dialogStatus=='detail'"></el-button>
               </div>
             </template>
           </el-table-column>
@@ -177,14 +186,14 @@
               </div>
               <div v-else>
                 {{ scope.row.referenceDesignator }}
-                <el-button class="no-border" icon="el-icon-edit" size="mini" @click="editField(scope.row, 'referenceDesignator')"></el-button>
+                <el-button class="no-border" icon="el-icon-edit" size="mini" @click="editField(scope.row, 'referenceDesignator')" :disabled="dialogStatus=='detail'"></el-button>
               </div>
             </template>
           </el-table-column>
           <el-table-column fixed="right" label="操作" width="100">
             <template slot-scope="scope">
               <el-tooltip class="item" effect="dark" content="删除" placement="top">
-                <el-button icon="el-icon-delete" circle @click="deleteBOM(scope)"></el-button>
+                <el-button icon="el-icon-delete" circle @click="deleteBOM(scope)" :disabled="dialogStatus=='detail'"></el-button>
               </el-tooltip>
             </template>
           </el-table-column>
@@ -204,6 +213,18 @@
         </el-table-column>
       </el-table>
 
+      <!-- 树形下拉 -->
+      <el-tree
+        v-if="showTree"
+        :show-checkbox="false"
+        :data="treeData"
+        :props="defaultProps"
+        node-key="id"
+        lazy
+        :load="loadNode"
+        @node-click="handleNodeClick">
+      </el-tree>
+
       </el-tab-pane>
 
       <!-- 版本管理tab -->
@@ -217,7 +238,7 @@
           </el-table-column>
           <el-table-column label="迭代版本" prop="iteration">
           </el-table-column>
-          <el-table-column fixed="right" label="操作" width="150" v-if="dialogStatus=='update'">
+          <el-table-column fixed="right" label="操作" width="150" v-if="dialogStatus=='detail'">
             <template slot-scope="scope">
               <el-tooltip class="item" effect="dark" content="删除" placement="top">
                 <el-button icon="el-icon-delete" circle @click="deleteVersion(scope)"></el-button>
@@ -295,7 +316,7 @@
       </el-form>
 
       <div class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button @click="bomDialogFormVisible = false">取 消</el-button>
         <el-button type="primary" @click="submitAddChildForm()">提 交</el-button>
       </div>
       </el-form>
@@ -385,17 +406,17 @@ export default{
               message: '请选择单位',
               trigger: 'change'
             }],
-            source:[{
+            'source.cnName':[{
               required: true,
               message: '请选择来源',
               trigger: 'change'
             }],
-            partType:[{
+            'partType.cnName':[{
               required: true,
               message: '请选择装配模式',
               trigger: 'change'
             }],
-            classification:[{
+            'classification.name':[{
               required: true,
               message: '请选择分类',
               trigger: 'change'
@@ -410,7 +431,14 @@ export default{
           formData: {}, // 存储文本框内容的对象
 
           partMasterId:'', //记录当前处理的part的masterId
-          currentPartId:''
+          currentPartId:'',
+
+          treeData: [],
+          defaultProps: {
+            children: 'children',
+            label: 'label'
+          },
+          showTree: false,
 
         }
     },
@@ -490,10 +518,32 @@ export default{
             this.classificationData = [];
             this.formData = {};
             this.dynamicEXA = null;
+            this.ruleForm={
+              id:'',
+              name: '',
+              master:{
+                measuringUnit: ''
+              },
+              source:{
+                cnName:'',
+                enName:''
+              },
+              partType: {
+                cnName:'',
+                enName:''
+              },
+              classification:{
+                name:'',
+                id:''
+              }
+            };
             this.$refs.collectionform.resetFields();
             this.BOMList=[];
             this.showParentTable=false;
-            this.parentBOMList=[]
+            this.parentBOMList=[];
+            this.treeData=[];
+            this.showTree=false;
+            this.axiosdata()
         },
 
         /* 重置菜单 */
@@ -501,65 +551,115 @@ export default{
             this.searchPartId= '';
             this.searchPartName= '';
             this.listQuery.page=1;
+            this.allPartList=[];
+            this.partList=[];
             this.axiosdata();
+        },
+
+        /* 检出部分 */
+        checkoutPart(scope){
+          console.log("检出：",scope.row);
+          if(scope.row.workingState.cnName=="工作中") this.$message.error("不可重复检出")
+          else{
+            this.$axios({
+              method:'post',
+              url:'part/checkout',
+              data:{
+                "masterId":scope.row.master.id
+              }
+            }).then((response)=>{
+              if(response.data.result=="SUCCESS"){
+                this.$message.success("检出成功");
+                this.allPartList=[];
+                this.axiosdata();
+              } else{
+                this.$message.error("检出失败")
+              }
+            })
+          }
         },
 
         /* 编辑部分 */
         async editPart(scope){
-          //获取行信息放置在编辑弹窗中
-          this.ruleForm.name=scope.row.name||'';
-          this.ruleForm.id=scope.row.id;
-
-          if(scope.row.source!=null){
-            this.ruleForm.source.cnName=scope.row.source.cnName;
-            this.ruleForm.source.enName=scope.row.source.enName;
-          }
+          if(scope.row.workingState.cnName!="工作中")this.$message.error("请先检出")
           else{
-            this.ruleForm.source.cnName='';
-            this.ruleForm.source.enName='';
-          }
+            //获取行信息放置在编辑弹窗中
+            this.ruleForm.name=scope.row.name||'';
+            this.ruleForm.id=scope.row.id;
 
-          this.ruleForm.master.measuringUnit=scope.row.master.measuringUnit||'';
+            if(scope.row.source!=null){
+              this.ruleForm.source.cnName=scope.row.source.cnName;
+              this.ruleForm.source.enName=scope.row.source.enName;
+            }
+            else{
+              this.ruleForm.source.cnName='';
+              this.ruleForm.source.enName='';
+            }
 
-          if(scope.row.partType!=null){
-            this.ruleForm.partType.cnName=scope.row.partType.cnName;
-            this.ruleForm.partType.enName=scope.row.partType.enName;
-          }
-          else {
-            this.ruleForm.partType.cnName='';
-            this.ruleForm.partType.enName='';
-          }
+            this.ruleForm.master.measuringUnit=scope.row.master.measuringUnit||'';
 
-          const classificationAttr = scope.row.extAttrs.find(attr => attr.name === 'classification');
-          if (classificationAttr){
-            this.ruleForm.classification.name = classificationAttr.value?.name || ''; 
-            this.ruleForm.classification.id = classificationAttr.value?.id || '';
-          } 
-          else{
-            this.ruleForm.classification.name = ''; 
-            this.ruleForm.classification.id = '';
-          } 
-          
-          this.dynamicEXA=null;
-          this.partMasterId='';
-          //异步处理
-          if (classificationAttr){
-            await this.selectClassification(classificationAttr.value?.id);
-            if(this.dynamicEXA!=null){
-              if (scope.row.clsAttrs && scope.row.clsAttrs.length > 0) {
-                this.formData = scope.row.clsAttrs[0].classification;
-              } else this.formData = {};
+            if(scope.row.partType!=null){
+              this.ruleForm.partType.cnName=scope.row.partType.cnName;
+              this.ruleForm.partType.enName=scope.row.partType.enName;
+            }
+            else {
+              this.ruleForm.partType.cnName='';
+              this.ruleForm.partType.enName='';
+            }
+
+            const classificationAttr = scope.row.extAttrs.find(attr => attr.name === 'classification');
+            if (classificationAttr){
+              this.ruleForm.classification.name = classificationAttr.value?.name || ''; 
+              this.ruleForm.classification.id = classificationAttr.value?.id || '';
             } 
-          } 
-          this.partMasterId=scope.row.master.id;
-          console.log(this.partMasterId)
-          this.currentPartId=scope.row.id;   
-          this.getPartVersion(this.partMasterId)
-          this.BOMList=[]
-          this.getBOMList()
+            else{
+              this.ruleForm.classification.name = ''; 
+              this.ruleForm.classification.id = '';
+            } 
+            
+            this.dynamicEXA=null;
+            this.partMasterId='';
+            //异步处理
+            if (classificationAttr){
+              await this.selectClassification(classificationAttr.value?.id);
+              if(this.dynamicEXA!=null){
+                if (scope.row.clsAttrs && scope.row.clsAttrs.length > 0) {
+                  this.formData = scope.row.clsAttrs[0].classification;
+                } else this.formData = {};
+              } 
+            } 
+            this.partMasterId=scope.row.master.id;
+            console.log("masterId:",this.partMasterId)
+            this.currentPartId=scope.row.id;   
+            this.getPartVersion(this.partMasterId)
+            this.BOMList=[]
+            this.getBOMList()
 
-          this.dialogStatus = "update";
-          this.dialogFormVisible = true
+            this.dialogStatus = "update";
+            this.dialogFormVisible = true
+          }
+        },
+
+        /* 检入部分 */
+        checkinPart(scope){
+          if(scope.row.workingState.cnName!="工作中") this.$error.message("请先检出")
+          else{
+            this.$axios({
+              method:'post',
+              url:'part/checkin',
+              data:{
+                "masterId":scope.row.master.id
+              }
+            }).then((response)=>{
+              if(response.data.result=="SUCCESS"){
+                this.$message.success("检入成功");
+                this.allPartList=[];
+                this.axiosdata();
+              } else{
+                this.$message.error("检入失败")
+              }
+            })
+          }
         },
 
         /* 获取版本信息 */
@@ -611,29 +711,29 @@ export default{
                   try {
                     const bomResponse = await this.$axios({
                       method: 'post',
-                      url: 'bomUsesOccurrence/findBySourceId/' + item.id,
+                      url: 'bomUsesOccurrence/findBySourceId/' + that.ruleForm.id,
                     });
                     console.log("找bomoccurrence");
                     console.log(bomResponse);
                     console.log(bomResponse.data.data.length);
                     if(bomResponse.data.data.length>0){
                       //遍历master对应的每个bomoccurrence，找到这一行对应的那个
-                      bomResponse.data.data.forEach((item)=>{
-                        if(item.bomLink.source.id==that.currentPartId){
-                          const bomLinkId = item.bomLink.id;
+                      bomResponse.data.data.forEach((item1)=>{
+                        if(item1.bomLink.target.id==item.id){
+                          const bomLinkId = item1.bomLink.id;
                           var BOMquantity='';
                           this.$axios({
                             method:'post',
                             url:'bomlink/get',
                             data:{
-                              "id": item.bomLink.id
+                              "id": item1.bomLink.id
                             }
                           }).then((bomLinkResponse)=>{
                             console.log('bomlink',bomLinkResponse)
                             if(bomLinkResponse.data.result=="SUCCESS"){
                               BOMquantity=bomLinkResponse.data.data[0].quantity; 
-                              const bomOccurrenceId= item.id;
-                              const BOMreferenceDesignator = item.referenceDesignator;
+                              const bomOccurrenceId= item1.id;
+                              const BOMreferenceDesignator = item1.referenceDesignator;
                               that.BOMList.push({
                                 "name": BOMname,
                                 "id": BOMid,
@@ -693,6 +793,7 @@ export default{
         /* 查看详情 */
         async detailInfo(scope){
           this.ruleForm.name=scope.row.name||'';
+          this.ruleForm.id=scope.row.id;
 
           if(scope.row.source!=null){
             this.ruleForm.source.cnName=scope.row.source.cnName;
@@ -733,6 +834,9 @@ export default{
           }   
           this.partMasterId=scope.row.master.id;   
           this.getPartVersion(this.partMasterId) 
+          this.currentPartId=scope.row.id; 
+          this.BOMList=[]
+          this.getBOMList()
 
           this.dialogStatus = "detail";
           this.dialogFormVisible = true
@@ -883,62 +987,46 @@ export default{
           console.log(this.ruleForm.partType)
           console.log(this.ruleForm.source)
           this.$refs[formname].validate((valid) => {
-            if (valid) {
               this.$axios({
                 method: 'post',
-                url:'part/checkout',
-                data:{
-                  'masterId': this.partMasterId
+                url: 'part/update',
+                data: {
+                  "id": this.currentPartId,
+                  'name' : this.ruleForm.name,
+                  'partType': this.ruleForm.partType.enName,
+                  'source': this.ruleForm.source.enName,
+                  'master':{
+                    measuringUnit:{
+                      'id':this.ruleForm.master.measuringUnit.id
+                    }
+                  },
+                  'extAttrs': [
+                    {
+                      'name':"classification",
+                      'value':this.ruleForm.classification.id
+                    },
+                  ],
+                  'clsAttrs':[
+                    {
+                      'classification': this.formData
+                    }
+                  ], 
+                  "modifier": "xulinxia fceced4b9dbf41f2af68a3ebda28a20f" 
                 }
-              }).then((response)=>{
-                if(response.data.result=='SUCCESS'){
-                  this.$axios({
-                    method: 'post',
-                    url: 'part/updateAndCheckin',
-                    data: {
-                      "masterId": this.partMasterId,
-                      "data":{
-                        'name' : this.ruleForm.name,
-                        'partType': this.ruleForm.partType.enName,
-                        'source': this.ruleForm.source.enName,
-                        'master':{
-                          measuringUnit:{
-                            'id':this.ruleForm.master.measuringUnit.id
-                          }
-                        },
-                        'branch': {
-                        },
-                        'extAttrs': [
-                          {
-                            'name':"classification",
-                            'value':this.ruleForm.classification.id
-                          },
-                        ],
-                        'clsAttrs':[
-                          {
-                            'classification': this.formData
-                          }
-                        ],  
-                      }   
-                    }
-                  }).then((response) => {
-                    console.log(response)
-                    if (response.data.result == "SUCCESS") {
-                      this.axiosdata();
-                      this.dialogFormVisible = false;
-                      this.$message.success('修改部分成功');
-                    } else {
-                      this.$message.error('修改部分失败');
-                    }
-                  })  
+              }).then((response) => {
+                console.log("update:",response)
+                if (response.data.result == "SUCCESS") {
+                  this.axiosdata();
+                  this.dialogFormVisible = false;
+                  this.$message.success('修改部分成功');
                 } else {
-                  this.$message.error('检出失败');
-                  return false;
+                  this.$message.error(response.data.errors[0].message);
                 }
-              });
-            }
-          })            
+              })  
+          });          
         },
+
+
 
         /* 添加子项 */
         addChild(){
@@ -1015,28 +1103,32 @@ export default{
               }
             }).then((response)=>{
               console.log(response)
-              const bomLinkId=response.data.data[0].id
-              console.log(bomLinkId)
-              if(response.data.result=="SUCCESS"){
-                this.$axios({
-                  method:'post',
-                  url:'bomUsesOccurrence/create',
-                  data:{
-                    "referenceDesignator":that.childFormData.childReferenceDesignator,
-                    "bomLink":{
-                      "id": bomLinkId
+              if(response.data.msg!="成功") this.$message.error(response.data.msg)
+              else{
+                if(response.data.msg=="成功"){
+                  const bomLinkId=response.data.data.id
+                  console.log(bomLinkId)
+                  this.$axios({
+                    method:'post',
+                    url:'bomUsesOccurrence/create',
+                    data:{
+                      "referenceDesignator":that.childFormData.childReferenceDesignator,
+                      "bomLink":{
+                        "id": bomLinkId
+                      }
                     }
-                  }
-                }).then((response1)=>{
-                  console.log(response1)
-                  if(response1.data.result=="SUCCESS"){
-                    this.$message.success("创建成功")
-                    this.bomDialogFormVisible=false
-                    this.BOMList=[];
-                    this.getBOMList()
-                  }else this.$message.error("创建失败")
-                })
+                  }).then((response1)=>{
+                    console.log(response1)
+                    if(response1.data.result=="SUCCESS"){
+                      this.$message.success("创建成功")
+                      this.bomDialogFormVisible=false
+                      this.BOMList=[];
+                      this.getBOMList()
+                    }else this.$message.error("创建失败")
+                  })
+                }
               }
+              
             })
           }
         },
@@ -1091,6 +1183,8 @@ export default{
           this.searchChildPartName= '';
           this.addChildPartList=[];
           this.isActive=false;
+          this.childFormData.childQuantity='';
+          this.childFormData.childReferenceDesignator='';
         },
 
         /* bom表内编辑 */
@@ -1219,7 +1313,68 @@ export default{
 
         /* 查看bom清单 */
         checkBOM(){
+         this.showTree = !this.showTree;
+          if (!this.showTree && this.treeData.length === 0) {
+            this.loadNode({ level: 0 }, data => {
+              this.treeData = data;
+            });
+          }else this.treeData=[];
+        },
 
+        /* 展开子项 */
+        loadNode(node, resolve) {
+          if (node.level === 0) {
+            this.$axios.post('bomlink/findAllSourcePart')
+              .then(response => {
+                console.log("findAllSourcePart:",response)
+                const data = response.data.data.map(item => ({
+                  id: item.id,
+                  label: item.name,
+                  leaf: false // assuming first level nodes have children
+                }));
+                resolve(data);
+              });
+          } else {
+            // Child nodes
+            this.$axios.post('bomlink/queryRelatedObjects', {
+              role: 'Source',
+              objectId: node.data.id
+            }).then(response1 => {
+              if(response1.data.data!=null){
+                console.log("queryRelatedObjects:",response1)
+                //返回masterId，找最新版本
+                let promises = response1.data.data.map(item => {
+                  return this.$axios({
+                    method: 'post',
+                    url: 'part/getLatestVersion',
+                    data: {
+                      "masterId": item.id,
+                      "version": "A"
+                    }
+                  }).then(response2 => {
+                    return response2.data.data.map(part => ({
+                      id: part.id,
+                      label: part.name,
+                      leaf: true // assuming child nodes are leaves
+                    }));
+                  });
+                });
+
+                Promise.all(promises).then(results => {
+                  let data = [];
+                  results.forEach(result => {
+                    data = data.concat(result);
+                  });
+                  resolve(data);
+                });
+              } else {
+                resolve([]);
+              }
+            });
+          };
+        },
+        handleNodeClick(data, node, component) {
+          console.log(data);
         }
     }
 }

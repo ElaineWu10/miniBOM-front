@@ -76,7 +76,14 @@ export default {
 			//注意数据是保存到json对象的params属性
             axios.post(url, params).then(function(response) { 
             	console.log(response.data.msg);
-                if(response.data.msg=="成功") that.$router.replace({name:'Home'});
+                if(response.data.msg=="成功") {
+                    console.log('Token: ' + response.data.data.token);
+                    //将 JWT 存储
+                    localStorage.setItem('token', response.data.data.token);
+                    console.log('JWT 存储成功');
+                    console.log('Token: ' + sessionStorage.getItem('token'));
+                    that.$router.replace({name:'Home'});
+                }
                 else{
                     that.$message.error(response.data.msg);
                     that.form.username='';

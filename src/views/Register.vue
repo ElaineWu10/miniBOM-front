@@ -58,6 +58,15 @@ export default {
                 }else callback(new Error("请输入正确的邮箱地址(xx@yy.zz)"));
             }
         };
+        var checkTelephone=(rule,value,callback)=>{
+            let phoneReg= /^[0-9]*$/;
+            if(!value) callback();
+            else {
+                if(phoneReg.test(value)){
+                    callback();
+                }else callback(new Error("请输入正确的电话号码"));
+            }
+        };
         return {
             form: {
                 username: "",
@@ -78,7 +87,8 @@ export default {
                 ],
                 telephone: [
                     {required: true, message: "电话不能为空", trigger: 'blur'},
-                    {min: 11, max: 11, message: "电话为11位", trigger: 'blur'}
+                    {min: 11, max: 11, message: "电话为11位", trigger: 'blur'},
+                    {validator: checkTelephone,trigger: 'blur'}
                 ],
                 email: [
                     {required: true, message: "邮箱不能为空", trigger: 'blur'},
@@ -101,7 +111,7 @@ export default {
 			//注意数据是保存到json对象的params属性
             axios.post(url, params).then(function(response) { 
                 console.log(response)
-            	if(response.data.code=='200') that.$router.replace({name:'Home'});
+            	if(response.data.code=='200') that.$router.replace({name:'Login'});
                 else{
                     that.$message.error(response.data.msg);
                     that.form.username='';
