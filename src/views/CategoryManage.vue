@@ -555,7 +555,7 @@
               this.dialogFormVisible = false;
               this.$message.success('删除成功')
             } else {
-              this.$message.error('删除失败');
+              this.$message.error('删除失败，分类被引用');
             }
           })
           //一定要加上catch处理，否则会报错
