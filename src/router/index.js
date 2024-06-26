@@ -27,8 +27,6 @@ const routes = [
       { path: '/attrManage', name: 'attrManage', component: () => import("../views/AttrManage.vue") }, 
       { path: '/categoryManage', name: 'CategoryManage', component: () => import("../views/CategoryManage.vue") }, 
       { path: '/partManage', name: 'partManage', component: () => import("../views/PartManage.vue") }, 
-      { path: '/BOMManage', name: 'BOMManage', component: () => import("../views/BOMManage.vue") }, 
-      { path: '/inheritManage', name: 'inheritManage', component: () => import("../views/InheritManage.vue") }
     ]
   },
   
