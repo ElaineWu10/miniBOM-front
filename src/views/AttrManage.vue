@@ -1,69 +1,105 @@
-<template>   
+<template>
+   
   <div style="padding: 5px 20px;">
     <br>
-    <!-- 属性查询表单 -->       
-    <el-form :inline="true" :model="queryForm" class="demo-form-inline">           
-      <el-form-item label="属性信息查询">              
-        <el-input v-model="queryForm.name" placeholder="请输入属性中文"></el-input>             
+    <!-- 属性查询表单 -->
+       
+    <el-form :inline="true" :model="queryForm" class="demo-form-inline">
+           
+      <el-form-item label="属性信息查询">
+               
+        <el-input
+          v-model="queryForm.name"
+          placeholder="请输入属性中文或英文精确名称"
+          ></el-input>
+             
       </el-form-item>
            
-      <el-form-item>               
-        <el-button type="primary" @click="hanldeSearch(1)" icon="el-icon-search" plain>查询</el-button>             
+      <el-form-item>
+               
+        <el-button type="primary" @click="hanldeSearch(1)" icon="el-icon-search" plain>查询</el-button>
+             
       </el-form-item>
 
-      <el-form-item>               
-        <el-button type="success" @click="addAttr" icon="el-icon-edit" plain>新增</el-button>             
+      <el-form-item>
+               
+        <el-button type="success" @click="addAttr" icon="el-icon-edit" plain>新增</el-button>
+             
       </el-form-item>
 
-      <el-form-item>               
-        <el-button type="primary" @click="resetSearch" icon="el-icon-refresh" plain>重置</el-button>             
-      </el-form-item>           
+      <el-form-item>
+               
+        <el-button type="primary" @click="resetSearch" icon="el-icon-refresh" plain
+          >重置</el-button>
+             
+      </el-form-item>
+           
          
     </el-form>
+
        
     <!-- 属性列表 -->
+       
     <el-table :data="tableData" border style="width: 100%">
-      <el-table-column prop="name" label="中文名称"></el-table-column>    
-      <el-table-column prop="nameEn" label="英文名称"></el-table-column>      
+            <el-table-column prop="name" label="中文名称"></el-table-column>    
+        <el-table-column prop="nameEn" label="英文名称"></el-table-column>      
       <el-table-column
         prop="description"
-        label="属性中文描述"></el-table-column>     
+        label="属性中文描述"
+      ></el-table-column>
+           
       <el-table-column
         prop="descriptionEn"
-        label="属性英文描述"></el-table-column>
-      <el-table-column prop="type" label="数据类型"></el-table-column>    
+        label="属性英文描述"
+      ></el-table-column>
+            <el-table-column prop="type" label="数据类型"></el-table-column>    
        
-      <el-table-column prop="category" label="查看属性所在分类" align="center" >      
-        <template slot-scope="scope">  
+      <el-table-column prop="category" label="查看属性所在分类" align="center" >
+               
+        <template slot-scope="scope">
+                   
           <el-button
             type="primary"
             icon="el-icon-search"
             circle
             @click="handleCheck(scope.row)"
-            plain></el-button>          
-        </template>    
+            plain
+          ></el-button>
+                 
+        </template>
+             
       </el-table-column>
            
-      <el-table-column label="操作" align="center" width="200">              
-        <template slot-scope="scope">                  
+      <el-table-column label="操作" align="center" width="200">
+               
+        <template slot-scope="scope">
+                   
           <el-button
             type="primary"
             icon="el-icon-edit"
             circle
             @click="handleEdit(scope.row)"
-            plain></el-button>
+            plain
+          ></el-button>
+
                    
           <el-button
             type="danger"
             icon="el-icon-delete"
             circle
             @click="handleDelete(scope.row)"
-            plain></el-button>     
-        </template>  
-      </el-table-column>      
+            plain
+          ></el-button>
+                 
+        </template>
+             
+      </el-table-column>
+         
     </el-table>
+
        
-    <!-- 分页 -->       
+    <!-- 分页 -->
+       
     <el-pagination
       @current-change="handleCurrentChange"
       :current-page="queryForm.page"
@@ -71,30 +107,48 @@
       :page-size="10"
       layout="total, sizes, prev, pager, next, jumper"
       :total="queryForm.total"
-      :background="true">        
+      :background="true"
+    >
+         
     </el-pagination>
 
        
-    <!-- 属性查看 -->       
-    <el-dialog :title="dialogTitle" width="800px" :visible.sync="attrCheckShow">           
-      <!-- 表格 -->           
-      <el-table :data="attrTableData" border style="width: 100%">               
+    <!-- 属性查看 -->
+       
+    <el-dialog :title="dialogTitle" width="800px" :visible.sync="attrCheckShow">
+           
+      <!-- 表格 -->
+           
+      <el-table :data="attrTableData" border style="width: 100%">
+               
         <el-table-column
           align="center"
           label="分类码"
           width="200"
-          prop="businessCode">                 
-        </el-table-column>               
-        <el-table-column label="属性中文名称" prop="description">                 
-        </el-table-column>               
-        <el-table-column label="属性英文名称" prop="descriptionEn">                 
-        </el-table-column>               
-        <el-table-column label="分类中文名称" prop="name">                  
+          prop="businessCode"
+        >
+                 
+        </el-table-column>
+               
+        <el-table-column label="属性中文名称" prop="description">
+                 
+        </el-table-column>
+               
+        <el-table-column label="属性英文名称" prop="descriptionEn">
+                 
+        </el-table-column>
+               
+        <el-table-column label="分类中文名称" prop="name">
+                   
           <template slot-scope="scope">
-             <el-link type="primary">{{ scope.row.name }}</el-link>                     
-          </template>                
-        </el-table-column>              
-        <el-table-column label="分类英文名称" prop="nameEn"> </el-table-column>             
+                        <el-link type="primary">{{ scope.row.name }}</el-link>  
+                   
+          </template>
+                 
+        </el-table-column>
+               
+        <el-table-column label="分类英文名称" prop="nameEn"> </el-table-column>
+             
       </el-table>
            
       <el-pagination
@@ -104,72 +158,111 @@
         :page-size="10"
         layout="total, sizes, prev, pager, next, jumper"
         :total="attrTableDataParams.total"
-        :background="true">             
-      </el-pagination>        
+        :background="true"
+      >
+             
+      </el-pagination>
+         
     </el-dialog>
+
        
-    <!-- 属性编辑弹窗 -->      
-    <el-dialog :title="dialogTitle" width="800px" :visible.sync="dialogVisible">           
+    <!-- 属性编辑弹窗 -->
+       
+    <el-dialog :title="dialogTitle" width="800px" :visible.sync="dialogVisible">
+           
       <el-form
         :model="attributeForm"
         :inline="true"
         :rules="rules"
         label-position="right"
         label-width="120px"
-        ref="attributeForm">               
-        <el-form-item label="中文名称" prop="name">                   
+        ref="attributeForm"
+      >
+               
+        <el-form-item label="中文名称" prop="name">
+                   
           <el-input
             style="width: 250px"
-            v-model="attributeForm.name"></el-input>                 
-        </el-form-item>               
-        <el-form-item label="英文名称" prop="nameEn">                   
-          <el-input
-            style="width: 250px"
-            v-model="attributeForm.nameEn"></el-input>                 
-        </el-form-item>               
-        <el-form-item label="属性中文描述" prop="description">                  
-          <el-input
-            type="textarea"
-            style="width: 250px"
-            v-model="attributeForm.description"></el-input>                 
+            :disabled="!isAdd"
+            v-model="attributeForm.name"
+          ></el-input>
+                 
         </el-form-item>
                
-        <el-form-item label="属性英文描述" prop="descriptionEn">                   
+        <el-form-item label="英文名称" prop="nameEn">
+                   
+          <el-input
+            style="width: 250px"
+            :disabled="!isAdd"
+            v-model="attributeForm.nameEn"
+          ></el-input>
+                 
+        </el-form-item>
+               
+        <el-form-item label="属性中文描述" prop="description">
+                   
           <el-input
             type="textarea"
             style="width: 250px"
-            v-model="attributeForm.descriptionEn"></el-input>                 
-        </el-form-item>               
-        <el-form-item label="数据类型" prop="type">                   
+            v-model="attributeForm.description"
+          ></el-input>
+                 
+        </el-form-item>
+               
+        <el-form-item label="属性英文描述" prop="descriptionEn">
+                   
+          <el-input
+            type="textarea"
+            style="width: 250px"
+            v-model="attributeForm.descriptionEn"
+          ></el-input>
+                 
+        </el-form-item>
+               
+        <el-form-item label="数据类型" prop="type">
+                   
           <el-select
             v-model="attributeForm.type"
             :disabled="!isAdd"
-            style="width: 250px">                      
+            style="width: 250px"
+          >
+                       
             <el-option
               v-for="item in typeOptions"
               :key="item.value"
               :label="item.label"
-              :value="item.value">                         
-            </el-option>                     
-          </el-select>                
+              :value="item.value"
+            >
+                         
+            </el-option>
+                     
+          </el-select>
+                 
         </el-form-item>
                
-        <el-form-item label="属性状态" prop="disableFlag">                  
+        <el-form-item label="属性状态" prop="disableFlag">
+                   
           <el-select v-model="attributeForm.disableFlag" style="width: 250px">
                         <el-option label="有效" :value="false"> </el-option>    
-                    <el-option label="失效" :value="true"> </el-option>                    
-          </el-select>                
+                    <el-option label="失效" :value="true"> </el-option>        
+             
+          </el-select>
+                 
         </el-form-item>
                
-        <el-form-item label="属性类型" prop="attributeType">                  
+        <el-form-item label="属性类型" prop="attributeType">
+                   
           <el-input
             :disabled="true"
             style="width: 250px"
-            v-model="attributeForm.attributeType"></el-input>                  
+            v-model="attributeForm.attributeType"
+          ></el-input>
+                   
           <!-- <el-select
             v-model="attributeForm.attributeType"
             :disabled="!isAdd"
-            style="width: 250px">
+            style="width: 250px"
+          >
             <el-option
               v-for="item in attributeTypeOptions"
               :key="item.value"
@@ -177,15 +270,19 @@
               :value="item.value"
             >
             </el-option>
-          </el-select> -->                
-        </el-form-item>            
+          </el-select> -->
+                 
+        </el-form-item>
+             
       </el-form>
            
       <span slot="footer" class="dialog-footer">
-         <el-button @click="dialogVisible = false">取消</el-button>      
-         <el-button type="primary" @click="handleSubmit">确定</el-button>      
-      </span>         
-    </el-dialog>     
+                <el-button @click="dialogVisible = false">取消</el-button>      
+          <el-button type="primary" @click="handleSubmit">确定</el-button>      
+      </span>
+         
+    </el-dialog>
+     
   </div>
 </template>
 
@@ -222,7 +319,7 @@ export default {
         descriptionEn: "",
         type: "",
         disableFlag: false,
-        attributeType: "拓展属性",
+        attributeType: "扩展属性",
       },
       rules: {
         name: [
@@ -232,13 +329,13 @@ export default {
           { required: true, message: "请输入属性英文名称", trigger: "blur" },
         ],
         description: [
-          { required: true, message: "请输入属性英文名称", trigger: "blur" },
+          { required: true, message: "请输入属性中文描述", trigger: "blur" },
         ],
         descriptionEn: [
-          { required: true, message: "请输入属性英文名称", trigger: "blur" },
+          { required: true, message: "请输入属性英文描述", trigger: "blur" },
         ],
         type: [
-          { required: true, message: "请输入属性英文名称", trigger: "blur" },
+          { required: true, message: "请输入属性类型", trigger: "blur" },
         ],
       },
       typeOptions: [
@@ -262,7 +359,7 @@ export default {
         // 调查询接口
         this.$axios({
           method: "post",
-          url: '/exaDefinition/find',
+          url: `/exaDefinition/find`,
         }).then((res) => {
           this.tableDatalist = res.data.data;
           this.queryForm.total = res.data.data.length;
@@ -275,7 +372,8 @@ export default {
         // 调查询接口
         this.$axios({
           method: "post",
-          url: '/exaDefinition/findByName?name=' + encodeURIComponent(this.queryForm.name), // data: { //   name: this.queryForm.name, // },
+          url: '/exaDefinition/findByName?name=' + encodeURIComponent(this.queryForm.name), 
+          // data: { //   name: this.queryForm.name, // },
         }).then((res) => {
           this.tableDatalist = res.data.data;
           this.queryForm.total = res.data.data.length;
@@ -314,7 +412,7 @@ export default {
       this.checkId = row.id;
       this.$axios({
         method: "post",
-        url: '/exaDefinition/nodeRefered/10/${this.attrTableDataParams.page}?id=${this.checkId}',
+        url: `/exaDefinition/nodeRefered/10/${this.attrTableDataParams.page}?id=${this.checkId}`,
       }).then((res) => {
         this.attrTableData = res.data.data;
         this.attrTableDataParams.total = res.data.pageInfo.totalRows;
@@ -324,7 +422,7 @@ export default {
       this.attrTableDataParams.page = val;
       this.$axios({
         method: "post",
-        url: '/exaDefinition/nodeRefered/10/${this.attrTableDataParams.page}?id=${this.checkId}',
+        url: `/exaDefinition/nodeRefered/10/${this.attrTableDataParams.page}?id=${this.checkId}`,
       }).then((res) => {
         this.attrTableData = res.data.data;
         this.attrTableDataParams.total = res.data.pageInfo.totalRows;

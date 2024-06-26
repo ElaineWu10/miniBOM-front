@@ -99,7 +99,7 @@
                 <el-input v-model="parentName" :readonly="dialogStatus=='detail'"></el-input>
             </el-form-item>
         </el-row type="flex">
-        </el-form>
+        </el-form> 
       <div class="dialog-footer" v-if="dialogStatus!='detail'">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
         <el-button type="primary" v-if="dialogStatus=='create'" @click="submitCollectionForm('collectionform')">添 加</el-button>
@@ -246,22 +246,25 @@
 
       //查询
       onSubmitSelect() {
-        this.AllList.forEach((item)=>{
-          if(item.name==this.searchData) this.searchId=item.id;
-        })
-        this.$axios({
-          method: 'post',
-          url: 'classificationNode/get',
-          data: {
-            'id': this.searchId
-          }
-        }).then((response) => {
-          this.listLoading = false;
-          this.list = response.data.data;
-          console.log(response.data.data);
-          console.log(this.list);
-          this.total=1;
-        })
+        if(this.searchData=='') this.$message.error("请输入查询关键字")
+        else{
+          this.AllList.forEach((item)=>{
+            if(item.name==this.searchData) this.searchId=item.id;
+          })
+          this.$axios({
+            method: 'post',
+            url: 'classificationNode/get',
+            data: {
+              'id': this.searchId
+            }
+          }).then((response) => {
+            this.listLoading = false;
+            this.list = response.data.data;
+            console.log(response.data.data);
+            console.log(this.list);
+            this.total=1;
+          })
+        }
       },
 
       //重置
@@ -546,6 +549,7 @@
                 id:scope.row.id,
             },
             }).then((response) => {
+              console.log("删除：",response)
             if (response.data.result == "SUCCESS") {
               this.axiosdata();
               this.dialogFormVisible = false;

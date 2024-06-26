@@ -764,30 +764,33 @@ export default{
 
         /* 删除部分 */
         deleteVisible(scope){
-          this.$confirm('确定要删除【' + scope.row.name + '】吗？', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-            this.$axios({
-              method: 'post',
-              url: '/part/delete',
-              data: {
-                masterId: scope.row.master.id
+          if(scope.row.workingState.cnName=="工作中") this.$message.error("请先检入")
+          else{
+            this.$confirm('确定要删除【' + scope.row.name + '】吗？', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+              this.$axios({
+                method: 'post',
+                url: '/part/delete',
+                data: {
+                  masterId: scope.row.master.id
+                }
+              }).then((response)=>{
+                if (response.data.result == "SUCCESS") {
+                  this.axiosdata();
+                  this.$message.success('删除成功')
+                } else {
+                  this.$message.error('删除失败');
+                }
+              })
+            }).catch((error)=>{
+              if(error !== 'cancel'){
+                this.$message.error('操作失败');
               }
-            }).then((response)=>{
-               if (response.data.result == "SUCCESS") {
-                this.axiosdata();
-                this.$message.success('删除成功')
-              } else {
-                this.$message.error('删除失败');
-              }
-            })
-          }).catch((error)=>{
-            if(error !== 'cancel'){
-              this.$message.error('操作失败');
-            }
-          });
+            });
+          }
         },
 
         /* 查看详情 */
@@ -1026,8 +1029,6 @@ export default{
           });          
         },
 
-
-
         /* 添加子项 */
         addChild(){
           this.bomDialogFormVisible=true;
@@ -1260,32 +1261,35 @@ export default{
 
         /* 删除版本 */
         deleteVersion(scope){
-           this.$confirm('确定要删除【' + scope.row.name + '】吗？', '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning'
-          }).then(() => {
-            this.$axios({
-              method:'post',
-              url:'part/deleteLatestVersion',
-              data:{
-                "masterId": scope.row.master.id
+          if(scope.row.workingState.cnName=="工作中") this.$message.error("请先检入")
+          else{
+            this.$confirm('确定要删除【' + scope.row.name + '】吗？', '提示', {
+              confirmButtonText: '确定',
+              cancelButtonText: '取消',
+              type: 'warning'
+            }).then(() => {
+              this.$axios({
+                method:'post',
+                url:'part/deleteLatestVersion',
+                data:{
+                  "masterId": scope.row.master.id
+                }
+              }).then((response)=>{
+                console.log(response)
+                if(response.data.result=="SUCCESS"){
+                  this.$message.success("删除成功")
+                  this.partVersionList=[]
+                  this.getPartVersion(this.partMasterId)
+                }else{
+                  this.$message.success("删除成功")
+                }
+              })
+            }).catch((error)=>{
+              if(error !== 'cancel'){
+                this.$message.error('操作失败');
               }
-            }).then((response)=>{
-              console.log(response)
-              if(response.data.result=="SUCCESS"){
-                this.$message.success("删除成功")
-                this.partVersionList=[]
-                this.getPartVersion(this.partMasterId)
-              }else{
-                this.$message.success("删除成功")
-              }
-            })
-          }).catch((error)=>{
-            if(error !== 'cancel'){
-              this.$message.error('操作失败');
-            }
-          });
+            });
+          }
         },
 
         /* 点击查看父项 */
