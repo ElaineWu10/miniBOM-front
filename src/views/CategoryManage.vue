@@ -4,7 +4,7 @@
     <!-- 标题 -->
     <el-form :inline="true" :model="listQuery" class="demo-form-inline">
         <el-form-item label="分类信息查询">
-            <el-input v-model="searchData" placeholder="请输入关键字"></el-input>
+            <el-input v-model="searchData" placeholder="请输入分类名称或编码"></el-input>
         </el-form-item>
         <el-form-item> 
             <el-button type="primary" @click="onSubmitSelect" icon="el-icon-search" plain>查询</el-button>
@@ -249,7 +249,7 @@
         if(this.searchData=='') this.$message.error("请输入查询关键字")
         else{
           this.AllList.forEach((item)=>{
-            if(item.name==this.searchData) this.searchId=item.id;
+            if(item.name==this.searchData||item.businessCode==this.searchData) this.searchId=item.id;
           })
           this.$axios({
             method: 'post',
