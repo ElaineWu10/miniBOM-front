@@ -193,7 +193,7 @@
           <el-table-column fixed="right" label="操作" width="100">
             <template slot-scope="scope">
               <el-tooltip class="item" effect="dark" content="删除" placement="top">
-                <el-button icon="el-icon-delete" circle @click="deleteBOM(scope)" :disabled="dialogStatus=='detail'"></el-button>
+                <el-button icon="el-icon-delete" circle @click="deleteBOM(scope)"></el-button>
               </el-tooltip>
             </template>
           </el-table-column>
@@ -366,9 +366,9 @@ export default{
           showParentTable:false,
 
           textMap: {
-          update: '修改部分',
-          create: '添加部分',
-          detail: '部分详情',
+          update: '修改部件',
+          create: '添加部件',
+          detail: '部件详情',
           addChild: '添加子项'
           },
 
@@ -782,7 +782,7 @@ export default{
                   this.axiosdata();
                   this.$message.success('删除成功')
                 } else {
-                  this.$message.error('删除失败');
+                  this.$message.error('存在bom关系，删除失败');
                 }
               })
             }).catch((error)=>{

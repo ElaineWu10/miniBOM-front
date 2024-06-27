@@ -129,27 +129,22 @@
         >
                  
         </el-table-column>
-               
-        <el-table-column label="属性中文名称" prop="description">
-                 
-        </el-table-column>
-               
-        <el-table-column label="属性英文名称" prop="descriptionEn">
-                 
-        </el-table-column>
-               
-        <el-table-column label="分类中文名称" prop="name">
-                   
-          <template slot-scope="scope">
-                        <el-link type="primary">{{ scope.row.name }}</el-link>  
-                   
-          </template>
+
+      <el-table-column label="分类中文名称" prop="name">
                  
         </el-table-column>
                
         <el-table-column label="分类英文名称" prop="nameEn"> </el-table-column>
-             
+               
+        <el-table-column label="分类中文描述" prop="description">
+                 
+        </el-table-column>
+               
+        <el-table-column label="分类英文描述" prop="descriptionEn">
+                 
+        </el-table-column>
       </el-table>
+              
            
       <el-pagination
         @current-change="handleAttrTableDataParams"
