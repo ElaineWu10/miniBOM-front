@@ -153,7 +153,7 @@
       <el-tab-pane label="BOM清单" name="BOMInfo" :key="'BOMInfo'" v-if="dialogStatus!='create'">
         <el-form :inline="true" :model="listQuery" class="demo-form-inline" :rules="rules">
           <el-form-item> 
-              <el-button @click="addChild" :disabled="dialogStatus=='detail'">新增子项</el-button>
+              <el-button @click="addChild" :disabled="dialogStatus=='update'">新增子项</el-button>
           </el-form-item>  
           <el-form-item>
               <el-button @click="checkBOM">查看BOM清单</el-button>
@@ -1281,7 +1281,7 @@ export default{
                   this.partVersionList=[]
                   this.getPartVersion(this.partMasterId)
                 }else{
-                  this.$message.success("删除成功")
+                  this.$message.error("存在bom关系，删除失败")
                 }
               })
             }).catch((error)=>{

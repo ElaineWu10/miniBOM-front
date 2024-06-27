@@ -115,7 +115,7 @@
        
     <!-- 属性查看 -->
        
-    <el-dialog :title="dialogTitle" width="800px" :visible.sync="attrCheckShow">
+    <el-dialog :title="dialogTitle" width="800px" :visible.sync="attrCheckShow" @close="handleClose">
            
       <!-- 表格 -->
            
@@ -163,27 +163,11 @@
        
     <!-- 属性编辑弹窗 -->
        
-    <el-dialog :title="dialogTitle" width="800px" :visible.sync="dialogVisible">
-           
-      <el-form
-        :model="attributeForm"
-        :inline="true"
-        :rules="rules"
-        label-position="right"
-        label-width="120px"
-        ref="attributeForm"
-      >
-               
-        <el-form-item label="中文名称" prop="name">
-                   
-          <el-input
-            style="width: 250px"
-            :disabled="!isAdd"
-            v-model="attributeForm.name"
-          ></el-input>
-                 
-        </el-form-item>
-               
+    <el-dialog :title="dialogTitle" width="800px" :visible.sync="dialogVisible">    
+      <el-form :model="attributeForm" :inline="true" :rules="rules" label-position="right" label-width="120px" ref="attributeForm">       
+        <el-form-item label="中文名称" prop="name">        
+          <el-input style="width: 250px" :disabled="!isAdd" v-model="attributeForm.name"></el-input>                
+        </el-form-item>             
         <el-form-item label="英文名称" prop="nameEn">
                    
           <el-input
@@ -345,6 +329,20 @@ export default {
     this.hanldeSearch();
   },
   methods: {
+    //处理弹窗关闭
+    handleClose(){
+      this.attributeForm={
+        id: "",
+        name: "",
+        nameEn: "",
+        description: "",
+        descriptionEn: "",
+        type: "",
+        disableFlag: false,
+        attributeType: "扩展属性",
+      };
+    },
+
     // 查询表格
     hanldeSearch(num) {
       if (num) {
